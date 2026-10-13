@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Search,
   GitCompareArrows,
@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 
 import { loadStrategy, type SearchConcept } from './utils/strategy'
+import { StrategyEditor, blankConcept, validateConcepts } from './components/StrategyEditor'
 import {
   generateVariants,
   type SearchOperator,
@@ -31,7 +32,22 @@ const tabs = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('busquedas')
-  const [concepts, setConcepts] = useState<SearchConcept[]>([])
+  const [concepts, setConcepts] = useState<SearchConcept[]>(() => {
+    try {
+      const saved = localStorage.getItem('comparador-estrategia-v1')
+      if (!saved) return []
+      const parsed: unknown = JSON.parse(saved)
+      if (!Array.isArray(parsed)) return []
+      return parsed.filter((row): row is SearchConcept =>
+        !!row && typeof row === 'object' &&
+        typeof row.id === 'string' && typeof row.concept === 'string' &&
+        typeof row.field === 'string' && Array.isArray(row.terms) &&
+        row.terms.every((term: unknown) => typeof term === 'string') &&
+        typeof row.enabled === 'boolean' && typeof row.required === 'boolean' &&
+        typeof row.core === 'boolean' && typeof row.weight === 'number'
+      )
+    } catch { return [] }
+  })
   const [fileName, setFileName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -39,11 +55,19 @@ export default function App() {
   const [engine, setEngine] = useState<Engine>('espacenet')
   const [copied, setCopied] = useState<string | null>(null)
 
+  useEffect(() => {
+    try { localStorage.setItem('comparador-estrategia-v1', JSON.stringify(concepts)) }
+    catch { /* Navegación privada o almacenamiento no disponible. */ }
+  }, [concepts])
+
+  const validationError = validateConcepts(concepts)
   const enabledCount = concepts.filter(c => c.enabled).length
 
   const variants = useMemo(
-    () => generateVariants(concepts, operator),
-    [concepts, operator],
+    () => validationError ? [] : generateVariants(
+      concepts.map(c => ({ ...c, terms: c.terms.map(t => t.trim()).filter(Boolean) })), operator
+    ),
+    [concepts, operator, validationError],
   )
 
   async function importExcel(file: File) {
@@ -138,6 +162,20 @@ export default function App() {
                 variantes de búsqueda en Espacenet y PATENTSCOPE.
               </p>
 
+              <div className="mt-5 flex flex-wrap gap-2">
+                <button type="button" onClick={() => {
+                  if (concepts.length && !window.confirm('¿Crear una estrategia nueva? La estrategia actual será reemplazada. Puedes exportarla antes.')) return
+                  setConcepts([blankConcept()])
+                  setFileName('Estrategia creada en el sitio')
+                  setError('')
+                }} className="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
+                  Crear estrategia nueva
+                </button>
+                {concepts.length > 0 && <button type="button" onClick={() => {
+                  if (window.confirm('¿Vaciar toda la estrategia?')) { setConcepts([]); setFileName(''); setError('') }
+                }} className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100">Vaciar estrategia</button>}
+              </div>
+
               <div className="mt-6 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-6">
                 <div className="flex flex-col items-center gap-3 text-center">
                   <Upload size={36} className="text-cyan-700" />
@@ -185,6 +223,8 @@ export default function App() {
 
               {concepts.length > 0 && (
                 <>
+                  <StrategyEditor concepts={concepts} onChange={setConcepts} onError={setError} />
+                  {validationError && <p role="alert" className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">{validationError} Las consultas se habilitarán al corregirlo.</p>}
                   <div className="mt-7">
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                       <div>
@@ -354,7 +394,7 @@ export default function App() {
                     {variants.length === 0 ? (
                       <p className="mt-5 rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
                         Selecciona al menos un concepto textual.
-                        No se generan búsquedas utilizando únicamente clasificaciones.
+                        No se generan búsquedas utilizando Ãºnicamente clasificaciones.
                       </p>
                     ) : (
                       <div className="mt-5 space-y-4">
@@ -451,8 +491,8 @@ export default function App() {
                 Comparación de resultados
               </h2>
               <p className="mt-3 text-slate-600">
-                Pendiente: importación de exportaciones de Espacenet,
-                consolidación de publicaciones, identificación de
+                Pendiente: importaciÃ³n de exportaciones de Espacenet,
+                consolidaciÃ³n de publicaciones, identificaciÃ³n de
                 familias y análisis de recurrencia.
               </p>
             </div>
@@ -476,8 +516,8 @@ export default function App() {
                 Comparación entre pares
               </h2>
               <p className="mt-3 text-slate-600">
-                Pendiente: similitud léxica TF-IDF por título,
-                resumen, reivindicaciones y descripción.
+                Pendiente: similitud léxica TF-IDF por tÃ­tulo,
+                resumen, reivindicaciones y descripciÃ³n.
               </p>
             </div>
           )}
