@@ -1,8 +1,6 @@
-@'
 node_modules/
 dist/
 .env
 .env.*
 !.env.example
 .wrangler/
-'@ | Set-Content -Path .gitignore -Encoding utf8
