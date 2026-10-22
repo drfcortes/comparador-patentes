@@ -51,7 +51,17 @@ function searchSQL(concepts: Concept[]) {
 }
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
   try {
-    if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.BIGQUERY_PROJECT_ID) return json({ error: 'Configura GOOGLE_SERVICE_ACCOUNT_JSON y BIGQUERY_PROJECT_ID en Cloudflare.' }, 503)
+
+if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.BIGQUERY_PROJECT_ID) {
+  return json({
+    error: 'Faltan variables de entorno.',
+    diagnostico: {
+      bigqueryProjectId: Boolean(env.BIGQUERY_PROJECT_ID),
+      googleServiceAccountJson: Boolean(env.GOOGLE_SERVICE_ACCOUNT_JSON)
+    }
+  }, 503)
+}
+
     if (env.PATENTS_API_KEY && request.headers.get('X-Patents-Key') !== env.PATENTS_API_KEY) return json({ error: 'Acceso no autorizado.' }, 401)
     if (Number(request.headers.get('content-length') || 0) > 24000) return json({ error: 'Solicitud demasiado grande.' }, 413)
     const input = await request.json() as { concepts?: Concept[] }
