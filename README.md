@@ -73,3 +73,8 @@ export default defineConfig([
 ])
 
 ```
+
+
+## Comparador de reivindicaciones (actualización)
+
+La pestaña **Comparación** permite cargar las reivindicaciones de la solicitud en estudio y de D1, D2, etc. Se pueden recuperar las reivindicaciones por número de publicación mediante BigQuery cuando la consulta esté dentro del límite de 10 GiB. Si la estimación excede el límite o no hay texto disponible, pegar o importar TXT/MD manualmente. No se hacen búsquedas masivas en Google Patents. Véanse `GOOGLE_BIGQUERY.md` y `SEMANTICA_LOCAL.md`.

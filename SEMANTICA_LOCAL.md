@@ -1,10 +1,7 @@
-# Comparación semántica local — primera etapa
+# Comparación semántica local
 
-- Ejecutar `npm install` y `npm run build` después de copiar los archivos.
-- Pestaña **Comparación**: agregar documentos D1, D2, etc. y pegar sus reivindicaciones o cargar TXT/MD.
-- Se toman los conceptos textuales habilitados de **Búsquedas**; no se alteran sus términos.
-- El botón **Comparar semánticamente** descarga por primera vez un modelo multilingüe cuantizado de Hugging Face (`Xenova/paraphrase-multilingual-MiniLM-L12-v2`) y calcula embeddings en el navegador mediante WASM. Se requiere conexión para la descarga inicial y suficiente memoria. No usa una API de inferencia de pago.
-- Las reivindicaciones se conservan en localStorage del navegador. No se envían a un servicio de IA, aunque las descargas del modelo se realizan desde un servidor externo.
-- La similitud de embeddings NO demuestra equivalencia funcional ni falta de novedad. Revisar el texto original y la fecha de publicación.
-- Esta primera etapa **no** recupera automáticamente reivindicaciones por número; esa conexión a BigQuery y la biblioteca compartida de documentos se incorporarán en la siguiente etapa. El campo de número sirve para identificar los textos pegados.
-- BigQuery sigue siendo un servicio independiente que requiere credenciales y puede generar cargos.
+La solicitud en estudio es la referencia principal. Se pega o importa en formato TXT/MD, al igual que los documentos D1, D2, etc. La recuperación opcional por número de publicación utiliza BigQuery con un presupuesto por consulta protegido. Los textos se guardan en localStorage del navegador.
+
+La comparación usa `Xenova/paraphrase-multilingual-MiniLM-L12-v2` en el navegador. Se fragmentan reivindicaciones por numeración, se generan vectores y se selecciona el pasaje más próximo en cada documento D para cada fragmento de la solicitud. Se muestra **un indicador global por documento** (promedio de mejores similitudes) y una tabla de pasajes con referencia tentativa.
+
+**Limitaciones:** no es un motor de inferencia técnica ni un dictamen de patentabilidad. No identifica automáticamente características estructurales o efectos técnicos equivalentes, ni verifica divulgación directa e inequívoca. Las correspondencias son sugerencias para el examen humano; revisar reivindicaciones, descripción, dibujos y prioridad de los documentos originales. El modelo se descarga la primera vez y después puede usar caché del navegador.
