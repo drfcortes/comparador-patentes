@@ -15,16 +15,20 @@ import {
 
 import { loadStrategy, type SearchConcept } from './utils/strategy'
 import { StrategyEditor, blankConcept, validateConcepts } from './components/StrategyEditor'
+import { GooglePatents } from './components/GooglePatents'
+import { SemanticCompare } from './components/SemanticCompare'
+import { Database } from 'lucide-react'
 import {
   generateVariants,
   type SearchOperator,
 } from './utils/queryBuilder'
 
-type Tab = 'busquedas' | 'comparacion' | 'documentos' | 'pares'
+type Tab = 'busquedas' | 'google' | 'comparacion' | 'documentos' | 'pares'
 type Engine = 'espacenet' | 'wipo'
 
 const tabs = [
   { id: 'busquedas', label: 'Búsquedas', icon: Search },
+  { id: 'google', label: 'Google Patents', icon: Database },
   { id: 'comparacion', label: 'Comparación', icon: GitCompareArrows },
   { id: 'documentos', label: 'Documentos', icon: FileText },
   { id: 'pares', label: 'Pares', icon: Files },
@@ -480,23 +484,15 @@ export default function App() {
                       </div>
                     )}
                   </div>
+
                 </>
               )}
             </div>
           )}
 
-          {activeTab === 'comparacion' && (
-            <div>
-              <h2 className="text-xl font-semibold">
-                Comparación de resultados
-              </h2>
-              <p className="mt-3 text-slate-600">
-                Pendiente: importaciÃ³n de exportaciones de Espacenet,
-                consolidaciÃ³n de publicaciones, identificaciÃ³n de
-                familias y análisis de recurrencia.
-              </p>
-            </div>
-          )}
+          {activeTab === 'google' && <GooglePatents concepts={concepts} validationError={validationError} />}
+
+          {activeTab === 'comparacion' && <SemanticCompare concepts={concepts} />}
 
           {activeTab === 'documentos' && (
             <div>

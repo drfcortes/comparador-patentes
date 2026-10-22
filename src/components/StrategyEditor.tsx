@@ -15,6 +15,7 @@ export function blankConcept(): SearchConcept {
   return { id: makeId(), concept: '', field: 'nftxt', terms: ['', '', ''], required: false, weight: 1, core: false, enabled: true }
 }
 
+
 export function validateConcepts(concepts: SearchConcept[]): string | null {
   for (const [i, row] of concepts.entries()) {
     if (!row.enabled) continue
